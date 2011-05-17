@@ -1,5 +1,8 @@
 #include "ClientMan.h"
 #include "Client.h"
+
+#include "..\Log.h"
+
 #include <cassert>
 
 namespace
@@ -7,6 +10,16 @@ namespace
 	// Memory Pool for clients.
 	typedef boost::singleton_pool<Client, sizeof(Client)> PoolClient;
 }
+
+
+/* static */ void CALLBACK ClientMan::WorkerRemoveClient(PTP_CALLBACK_INSTANCE /* Instance */, PVOID Context)
+{
+	Client* client = static_cast<Client*>(Context);
+	assert(client);
+
+	ClientMan::Instance()->RemoveClient(client);
+}
+
 
 ClientMan::ClientMan(void)
 {
@@ -91,7 +104,19 @@ void ClientMan::Send(const string& msg)
 	LeaveCriticalSection(&m_CSForClients);
 }
 
-void ClientMan::RemoveClient(const Client* client)
+void ClientMan::PostRemoveClient(Client* client)
+{
+	if(TrySubmitThreadpoolCallback(ClientMan::WorkerRemoveClient, client, NULL) == false)
+	{
+		ERROR_CODE(GetLastError(), "Could not start WorkerRemoveClient.");
+
+		// This is not good. We should remove the client in a different thread to wait until its IO operations are complete.
+		// You need a fallback strategy. DO NOT JUST FOLLOW THIS EXAMPLE. YOU HAVE BEEN WARNED. 
+		RemoveClient(client);
+	}
+}
+
+void ClientMan::RemoveClient(Client* client)
 {
 	EnterCriticalSection(&m_CSForClients);
 

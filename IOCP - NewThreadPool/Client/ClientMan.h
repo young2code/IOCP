@@ -12,6 +12,9 @@ using namespace std;
 
 class ClientMan : public TSingleton<ClientMan>
 {
+private:
+	static void CALLBACK WorkerRemoveClient(PTP_CALLBACK_INSTANCE /* Instance */, PVOID Context);
+
 public:
 	ClientMan(void);
 	virtual ~ClientMan(void);
@@ -20,11 +23,15 @@ public:
 	void ConnectClients(const char* ip, u_short port);
 	void ShutdownClients();
 	void RemoveClients();
+	void PostRemoveClient(Client* client);
 	void Send(const string& msg);
-	void RemoveClient(const Client* client);
 
 	bool IsAlive(const Client* client);
 	size_t GetNumClients();
+
+private:
+	void RemoveClient(Client* client);
+
 
 private:
 	typedef vector<Client*> ClientList;

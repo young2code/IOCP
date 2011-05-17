@@ -99,7 +99,7 @@ namespace
 			else
 			{
 				event->client->OnClose();
-				ClientMan::Instance()->RemoveClient(event->client);
+				ClientMan::Instance()->PostRemoveClient(event->client);
 			}
 			break;
 
@@ -115,7 +115,7 @@ namespace
 		ERROR_CODE(IoResult, "I/O operation failed.");
 		PrintConnectionInfo(event->client->GetSocket());
 
-		ClientMan::Instance()->RemoveClient(event->client);
+		ClientMan::Instance()->PostRemoveClient(event->client);
 	}
 
 	IOEvent::Destroy(event);
