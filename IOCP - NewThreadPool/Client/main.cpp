@@ -35,8 +35,6 @@ void main(int argc, char* argv[])
 
 	ClientMan::New();
 
-	Log::EnableTrace(false);
-
 	short port = PORT_START;
 
 	string input;
