@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client - OldThreadPool", "Client.vcproj", "{D89CFDF1-ACBD-414F-81C5-83C3AB5FB403}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D89CFDF1-ACBD-414F-81C5-83C3AB5FB403}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D89CFDF1-ACBD-414F-81C5-83C3AB5FB403}.Debug|Win32.Build.0 = Debug|Win32
+		{D89CFDF1-ACBD-414F-81C5-83C3AB5FB403}.Release|Win32.ActiveCfg = Release|Win32
+		{D89CFDF1-ACBD-414F-81C5-83C3AB5FB403}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
