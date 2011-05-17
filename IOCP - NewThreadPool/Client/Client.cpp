@@ -185,7 +185,6 @@ void Client::Destroy()
 
 	if( m_pTPIO != NULL )
 	{
-		// FIX THIS!!!
 		WaitForThreadpoolIoCallbacks( m_pTPIO, false );
 		CloseThreadpoolIo( m_pTPIO );
 		m_pTPIO = NULL;
