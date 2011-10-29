@@ -38,7 +38,9 @@ void main(int argc, char* argv[])
 		return;
 	}
 
-	//Log::EnableTrace(false);
+#ifndef _DEBUG
+	Log::EnableTrace(false);
+#endif
 
 	string input;
 	bool loop = true;
