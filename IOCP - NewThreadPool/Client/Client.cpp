@@ -113,8 +113,6 @@ namespace
 	else 
 	{
 		ERROR_CODE(IoResult, "I/O operation failed.");
-		PrintConnectionInfo(event->client->GetSocket());
-
 		ClientMan::Instance()->PostRemoveClient(event->client);
 	}
 

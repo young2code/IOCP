@@ -8,9 +8,6 @@ using namespace std;
 #include "..\\Network.h"
 #include "ClientMan.h"
 
-//The IANA suggests 49152 to 65535 as "dynamic and/or private ports".
-const short PORT_START = 50000;
-
 void main(int argc, char* argv[])
 {
 	Log::Setup();
@@ -35,8 +32,6 @@ void main(int argc, char* argv[])
 
 	ClientMan::New();
 
-	short port = PORT_START;
-
 	string input;
 	bool loop = true;
 	while(loop)
@@ -49,7 +44,7 @@ void main(int argc, char* argv[])
 		}
 		else if(input =="`create")
 		{
-			ClientMan::Instance()->AddClients(port, maxClients);
+			ClientMan::Instance()->AddClients(maxClients);
 		}
 		else if(input == "`connect")
 		{

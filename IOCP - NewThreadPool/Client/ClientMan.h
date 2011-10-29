@@ -19,7 +19,7 @@ public:
 	ClientMan(void);
 	virtual ~ClientMan(void);
 
-	void AddClients(short& port, int numClients);
+	void AddClients(int numClients);
 	void ConnectClients(const char* ip, u_short port);
 	void ShutdownClients();
 	void RemoveClients();

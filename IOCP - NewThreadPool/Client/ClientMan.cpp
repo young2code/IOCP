@@ -34,7 +34,7 @@ ClientMan::~ClientMan(void)
 }
 
 
-void ClientMan::AddClients(short& port, int numClients)
+void ClientMan::AddClients(int numClients)
 {
 	EnterCriticalSection(&m_CSForClients);
 
@@ -42,7 +42,7 @@ void ClientMan::AddClients(short& port, int numClients)
 	{
 		Client* client = m_PoolClient.construct();
 
-		if(client->Create(port++))
+		if(client->Create(0))
 		{
 			m_listClient.push_back(client);
 		}
