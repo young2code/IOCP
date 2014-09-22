@@ -144,15 +144,6 @@ bool Server::Create(short port, int maxPostAccept)
 		return false;
 	}
 
-	// We will use AcceptEx() so need to enalbe conditional accpet.
-	bool conditionalAccept = true;
-	if( setsockopt(m_listenSocket, SOL_SOCKET, SO_CONDITIONAL_ACCEPT, reinterpret_cast<const char*>(&conditionalAccept), sizeof(conditionalAccept)) == SOCKET_ERROR )
-	{
-		ERROR_CODE(WSAGetLastError(), "setsockopt() failed with SO_CONDITIONAL_ACCEPT.");
-		Destroy();
-		return false;
-	}
-
 	// Create & Start ThreaddPool for socket IO
 	m_pTPIO = CreateThreadpoolIo(reinterpret_cast<HANDLE>(m_listenSocket), Server::IoCompletionCallback, NULL, NULL);
 	if( m_pTPIO == NULL )

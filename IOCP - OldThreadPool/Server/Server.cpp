@@ -146,15 +146,6 @@ bool Server::Create(short port, int maxPostAccept)
 		return false;
 	}
 
-	// We will use AcceptEx() so need to enalbe conditional accpet.
-	bool conditionalAccept = true;
-	if( setsockopt(m_listenSocket, SOL_SOCKET, SO_CONDITIONAL_ACCEPT, reinterpret_cast<const char*>(&conditionalAccept), sizeof(conditionalAccept)) == SOCKET_ERROR )
-	{
-		ERROR_CODE(WSAGetLastError(), "setsockopt() failed with SO_CONDITIONAL_ACCEPT.");
-		Destroy();
-		return false;
-	}
-
 	// Connect the listener socket to IOCP
 	if(BindIoCompletionCallback(reinterpret_cast<HANDLE>(m_listenSocket), Server::OnIOCompletion, 0) == false)
 	{
