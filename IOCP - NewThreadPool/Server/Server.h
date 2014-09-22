@@ -64,4 +64,9 @@ private:
 	volatile long m_NumPostAccept;
 
 	CRITICAL_SECTION m_CSForClients;
+
+	TP_CALLBACK_ENVIRON m_ClientTPENV;
+	TP_CLEANUP_GROUP* m_ClientTPCLEAN;
+
+	volatile bool m_ShuttingDown;
 };

@@ -69,8 +69,7 @@ void CALLBACK Server::WorkerPostAccept(PTP_CALLBACK_INSTANCE /* Instance */, PVO
 	Server* server = static_cast<Server*>(Context);
 	assert(server);
 
-	bool loop = true;
-	while(loop)
+	while(!server->m_ShuttingDown)
 	{
 		server->PostAccept();
 	}
@@ -111,7 +110,9 @@ Server::Server(void)
   m_AcceptTPWORK(NULL),
   m_listenSocket(INVALID_SOCKET),
   m_MaxPostAccept(0),
-  m_NumPostAccept(0)
+  m_NumPostAccept(0),
+  m_ClientTPCLEAN(NULL),
+  m_ShuttingDown(true)
 {
 }
 
@@ -127,6 +128,16 @@ bool Server::Create(short port, int maxPostAccept)
 	assert(maxPostAccept > 0);
 
 	m_MaxPostAccept = maxPostAccept;
+
+	// Create Client Work Thread Env for using cleaning group. We need this for shutting down properly.
+	InitializeThreadpoolEnvironment(&m_ClientTPENV);
+	m_ClientTPCLEAN = CreateThreadpoolCleanupGroup();
+	if (m_ClientTPCLEAN == NULL)
+	{
+		ERROR_CODE(GetLastError(), "Could not create client cleaning group.");
+		return false;
+	}
+	SetThreadpoolCallbackCleanupGroup(&m_ClientTPENV, m_ClientTPCLEAN, NULL);	
 
 	// Create Listen Socket
 	m_listenSocket = Network::CreateSocket(true, port);
@@ -172,6 +183,9 @@ bool Server::Create(short port, int maxPostAccept)
 		Destroy();
 		return false;
 	}	
+
+	m_ShuttingDown = false;	
+
 	SubmitThreadpoolWork(m_AcceptTPWORK);
 
 	return true;
@@ -180,6 +194,8 @@ bool Server::Create(short port, int maxPostAccept)
 
 void Server::Destroy()
 {
+	m_ShuttingDown = true;
+
 	if( m_AcceptTPWORK != NULL )
 	{
 		WaitForThreadpoolWorkCallbacks( m_AcceptTPWORK, true );
@@ -200,6 +216,14 @@ void Server::Destroy()
 		CloseThreadpoolIo( m_pTPIO );
 		m_pTPIO = NULL;
 	}
+
+	if (m_ClientTPCLEAN != NULL)
+	{
+		CloseThreadpoolCleanupGroupMembers(m_ClientTPCLEAN, false, NULL);
+		CloseThreadpoolCleanupGroup(m_ClientTPCLEAN);
+		DestroyThreadpoolEnvironment(&m_ClientTPENV);
+		m_ClientTPCLEAN = NULL;
+	}	
 	
 	EnterCriticalSection(&m_CSForClients);
 	for(ClientList::iterator itor = m_Clients.begin() ; itor != m_Clients.end() ; ++itor)	
@@ -348,7 +372,7 @@ void Server::OnAccept(IOEvent* event)
 	// Add client in a different thread.
 	// It is because we need to return this function ASAP so that this IO worker thread can process the other IO notifications.
 	// If adding client is fast enough, we can call it here but I assume it's slow.	
-	if(TrySubmitThreadpoolCallback(Server::WorkerAddClient, event->GetClient(), NULL) == false)
+	if(!m_ShuttingDown && TrySubmitThreadpoolCallback(Server::WorkerAddClient, event->GetClient(), &m_ClientTPENV) == false)
 	{
 		ERROR_CODE(GetLastError(), "Could not start WorkerAddClient.");
 
@@ -406,7 +430,7 @@ void Server::OnClose(IOEvent* event)
 	TRACE("Client's socket has been closed.");
 
 	// If whatever game logics about this event are fast enough, we can manage them here but I assume they are slow.	
-	if(TrySubmitThreadpoolCallback(Server::WorkerRemoveClient, event->GetClient(), NULL) == false)
+	if(!m_ShuttingDown && TrySubmitThreadpoolCallback(Server::WorkerRemoveClient, event->GetClient(), &m_ClientTPENV) == false)
 	{
 		ERROR_CODE(GetLastError(), "can't start WorkerRemoveClient. call it directly.");
 
